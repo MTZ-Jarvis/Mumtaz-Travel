@@ -21,6 +21,7 @@
     "@types/node": "24.3.3",
     "@types/react": "19.1.13",
     "tailwindcss": "^4",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vercel": "^48.0.0"
   }
 }
