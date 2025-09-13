@@ -30,3 +30,17 @@ body {
 .btn { padding: 10px 14px; border-radius: 14px; background: #111; color: #fff; text-decoration: none; }
 .btn:hover { opacity: .9 }
 .navlink { padding: 6px 10px; border-radius: 10px; text-decoration: none; color: inherit }
+
+/* === MUMTAZ BRAND (maroon & gold) === */
+:root{
+  --brand-primary:#7A0C2E;   /* maroon */
+  --brand-primary-700:#630a25;
+  --brand-primary-900:#3b0616;
+  --brand-accent:#C9A227;    /* gold */
+  --brand-accent-700:#A5841F;
+  --brand-surface:#0f0c0c;   /* gelap netral untuk hover/overlay */
+}
+
+/* Utility: sembunyikan scrollbar horizontal navbar saat overflow */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

@@ -1,161 +1,192 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+import Image from "next/image";
 import Link from "next/link";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
-const PRIMARY_LINKS = [
-  { href: "#home", label: "Home", id: "home" },
-  { href: "#paket", label: "Paket", id: "paket" },
-  { href: "#tabungan", label: "Tabungan", id: "tabungan" },
-] as const;
+type Leaf = { href: string; label: string };
+type Node = { label: string; children: Leaf[] };
+type Item = Leaf | Node;
 
-const OVERFLOW_LINKS = [
-  { href: "#corporate", label: "Corporate", id: "corporate" },
-  { href: "#faq", label: "FAQ", id: "faq" },
-  { href: "#tentang", label: "Tentang", id: "tentang" },
-] as const;
+const navItems: Item[] = [
+  { href: "/", label: "Home" },
+  {
+    label: "Paket Umroh",
+    children: [
+      { href: "/paket-umroh", label: "Semua Paket" },
+      { href: "/paket-umroh/hemat", label: "Umroh Hemat" },
+      { href: "/paket-umroh/reguler", label: "Umroh Reguler" },
+      { href: "/paket-umroh/vip", label: "Umroh VIP" },
+      { href: "/paket-umroh/turki", label: "Umroh + Turki" },
+      { href: "/paket-umroh/dubai", label: "Umroh + Dubai" },
+    ],
+  },
+  { href: "/tabungan", label: "Program Tabungan" },
+  {
+    label: "Wisata Halal",
+    children: [
+      { href: "/wisata-halal/indonesia", label: "Indonesia" },
+      { href: "/wisata-halal/asia", label: "Asia" },
+      { href: "/wisata-halal/middle-east", label: "Middle East" },
+      { href: "/wisata-halal/europe", label: "Europe" },
+      { href: "/wisata-halal/custom", label: "Custom Trip" },
+    ],
+  },
+  { href: "/gallery", label: "Gallery" },
+  { href: "/faq", label: "FAQ" },
+  {
+    label: "Why Us?",
+    children: [
+      { href: "/profile", label: "Tentang Kami" },
+      { href: "/kontak", label: "Hubungi Kami" },
+      { href: "#", label: "Resmi PPIU Kemenag" },
+      { href: "#", label: "Terdaftar ASTINDO & SAPUHI" },
+      { href: "#", label: "Transparansi biaya & layanan" },
+      { href: "#", label: "Pendampingan end-to-end" },
+    ],
+  },
+];
 
-const WA_CTA = {
-  href: "https://wa.me/62895600000101?text=Assalamu'alaikum%2C%20saya%20ingin%20konsultasi%20paket%20Umroh%20Mumtaz%20Travel.",
-  label: "Konsultasi",
-} as const;
+const isNode = (it: Item): it is Node =>
+  Array.isArray((it as any).children) && (it as any).children.length > 0;
+
+function Pill({ active, children }: { active?: boolean; children: React.ReactNode }) {
+  return (
+    <div
+      className={[
+        "px-3 py-2 rounded-xl text-[13px] leading-none",
+        "border transition-colors select-none",
+        "flex items-center gap-2",
+        active
+          ? "bg-[var(--brand-accent)] text-[var(--brand-primary-900)] border-[var(--brand-accent)]"
+          : "text-white/95 border-white/30 hover:bg-white/10",
+      ].join(" ")}
+    >
+      {children}
+    </div>
+  );
+}
+
+function NavLink({ href, label }: Leaf) {
+  const pathname = usePathname();
+  const active = pathname === href || (href !== "/" && pathname?.startsWith(href));
+  return (
+    <Link href={href} className="inline-block whitespace-nowrap">
+      <Pill active={active}>{label}</Pill>
+    </Link>
+  );
+}
+
+function NavDropdown({ label, items = [] as Leaf[] }) {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const active = items.some((it) => pathname && pathname.startsWith(it.href));
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center whitespace-nowrap"
+        aria-expanded={open}
+      >
+        <Pill active={active}>
+          <span>{label}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className={`ml-1 transition-transform ${open ? "rotate-180" : ""}`}>
+            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Pill>
+      </button>
+
+      {open && items.length > 0 && (
+        <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-white/20 bg-[color:var(--brand-primary-700)]/95 backdrop-blur shadow-lg">
+          {items.map((it, idx) => (
+            <Link key={it.href + idx} href={it.href} className="block px-4 py-3 text-sm text-white/95 hover:bg-white/10" onClick={() => setOpen(false)}>
+              {it.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [overflowOpen, setOverflowOpen] = useState(false);
-  const [active, setActive] = useState<string>("home");
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 8);
-
-      const all = [...PRIMARY_LINKS, ...OVERFLOW_LINKS];
-      const offset = 120;
-      const rectTops = all.map((s) => {
-        const el = document.getElementById(s.id || "");
-        const rect = el ? el.getBoundingClientRect() : { top: Infinity };
-        return rect.top;
-      });
-      let current = all[0].id;
-      for (let i = 0; i < rectTops.length; i++) {
-        if (rectTops[i] - offset <= 0) current = all[i].id;
-      }
-      setActive(current);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-
-  const baseLink = "px-3 py-2 rounded-xl text-sm transition-colors ";
-  const activeLink = "bg-white/80 text-gray-900 shadow-sm";
-  const idleLink = "text-white/80 hover:text-white hover:bg-white/10";
 
   return (
-    <header
-      className={`sticky top-0 z-50 transition-all ${
-        scrolled ? "backdrop-blur bg-gray-900/60 shadow-sm" : "bg-transparent"
-      }`}
-    >
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <Link href="#home" className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-xl bg-amber-500 flex items-center justify-center font-bold text-gray-900">
-              M
-            </div>
-            <span className="font-semibold text-white tracking-wide">Mumtaz Travel</span>
-          </Link>
+    <header className="sticky top-0 z-50 shadow-sm">
+      <nav className="w-full" style={{ backgroundColor: "var(--brand-primary)" }}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between gap-4">
+            {/* Brand */}
+            <Link href="/" className="flex items-center gap-3 min-w-0">
+              <Image src="/logo-mumtaz.png" alt="Mumtaz" width={56} height={56} className="h-14 w-14 rounded-full object-contain" priority />
+              <div className="leading-tight">
+                <p className="text-lg font-bold text-[var(--brand-accent)]">MUMTAZ</p>
+                <p className="text-[13px] text-white">Madaniah Utama</p>
+              </div>
+            </Link>
 
-          <div className="hidden md:flex items-center gap-2">
-            {PRIMARY_LINKS.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className={baseLink + (active === item.id ? activeLink : idleLink)}
-              >
-                {item.label}
-              </a>
-            ))}
-            <div className="relative">
-              <button
-                onClick={() => setOverflowOpen((v) => !v)}
-                onBlur={() => setTimeout(() => setOverflowOpen(false), 150)}
-                className={
-                  baseLink +
-                  (OVERFLOW_LINKS.some((l) => l.id === active) ? activeLink : idleLink) +
-                  " flex items-center gap-1"
-                }
-              >
-                Lainnya <ChevronDown className="h-4 w-4" />
-              </button>
-              {overflowOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white/95 shadow-lg ring-1 ring-black/5 backdrop-blur p-2">
-                  {OVERFLOW_LINKS.map((item) => (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setOverflowOpen(false)}
-                      className={`block px-3 py-2 rounded-xl text-sm text-gray-800 hover:bg-gray-100 ${
-                        active === item.id ? "bg-gray-100" : ""
-                      }`}
-                    >
-                      {item.label}
-                    </a>
-                  ))}
-                </div>
+            {/* Menu desktop inline semua */}
+            <div className="hidden md:flex items-center gap-2 flex-nowrap overflow-x-auto no-scrollbar">
+              {navItems.map((it) =>
+                isNode(it) ? (
+                  <NavDropdown key={it.label} label={it.label} items={it.children} />
+                ) : (
+                  <NavLink key={(it as Leaf).href} {...(it as Leaf)} />
+                )
               )}
             </div>
-            <a
-              href={WA_CTA.href}
-              target="_blank"
-              className="ml-3 inline-flex items-center justify-center rounded-2xl border border-amber-400 bg-amber-400/90 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-amber-300 focus:outline-none focus:ring-2 focus:ring-amber-300"
+
+            {/* Burger mobile */}
+            <button
+              className="md:hidden inline-flex items-center justify-center rounded-xl p-2 text-white hover:opacity-90"
+              onClick={() => setOpen((v) => !v)}
+              aria-label="Toggle Menu"
+              aria-expanded={open}
             >
-              {WA_CTA.label}
-            </a>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {open ? <path d="M18 6 6 18M6 6l12 12" /> : (<><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>)}
+              </svg>
+            </button>
           </div>
 
-          <button
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
-            aria-expanded={open}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        </div>
-
-        {open && (
-          <div className="md:hidden pb-4">
-            <div className="space-y-2 rounded-2xl bg-white/95 p-3 shadow-md backdrop-blur">
-              {[...PRIMARY_LINKS, ...OVERFLOW_LINKS].map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={`block ${baseLink} ${
-                    active === item.id
-                      ? "bg-gray-100 text-gray-900"
-                      : "text-gray-800 hover:bg-gray-100"
-                  }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-              <a
-                href={WA_CTA.href}
-                target="_blank"
-                className="block text-center rounded-2xl border border-amber-400 bg-amber-400/90 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-amber-300"
-              >
-                {WA_CTA.label}
-              </a>
+          {/* Drawer mobile */}
+          {open && (
+            <div className="md:hidden pb-3">
+              <div className="flex flex-col gap-2">
+                {navItems.map((it, idx) =>
+                  isNode(it) ? (
+                    <details key={"dd-"+idx} className="rounded-xl border border-white/20">
+                      <summary className="px-4 py-3 cursor-pointer text-white flex justify-between items-center">
+                        {it.label}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="ml-2 shrink-0">
+                          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </summary>
+                      <div className="flex flex-col">
+                        {it.children.map((c, cIdx) => (
+                          <Link key={c.href + cIdx} href={c.href} className="px-4 py-3 text-white/95 hover:bg-white/10" onClick={() => setOpen(false)}>
+                            {c.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </details>
+                  ) : (
+                    <Link key={(it as Leaf).href} href={(it as Leaf).href} className="px-4 py-3 rounded-xl text-[14px] text-white border border-white/20 hover:bg-white/10" onClick={() => setOpen(false)}>
+                      {(it as Leaf).label}
+                    </Link>
+                  )
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </nav>
     </header>
   );

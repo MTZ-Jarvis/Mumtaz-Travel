@@ -10,7 +10,6 @@
 │   ├── layout.jsx
 │   ├── layout.old.js
 │   ├── layout.tsx
-│   ├── page.jsx
 │   ├── page.old.js
 │   ├── page.tsx
 │   ├── paket
@@ -473,4 +472,4 @@
 │   └── window.svg
 └── tsconfig.json
 
-136 directories, 338 files
+136 directories, 337 files

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="g4" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e2330"/>
+      <stop offset="1" stop-color="#141824"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#g4)"/>
+  <text x="80" y="180" fill="#D4AF37" font-size="56" font-weight="700" font-family="Inter, Arial">Wisata Halal</text>
+  <text x="80" y="270" fill="#fff" font-size="90" font-weight="900" font-family="Inter, Arial">Jelajah Dunia, Tetap Syariah</text>
+</svg>
