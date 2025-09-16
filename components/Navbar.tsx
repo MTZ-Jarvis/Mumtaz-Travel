@@ -1,193 +1,212 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import { Cinzel, Cormorant_Garamond } from "next/font/google";
 
-type Leaf = { href: string; label: string };
-type Node = { label: string; children: Leaf[] };
-type Item = Leaf | Node;
+const cinzel = Cinzel({ subsets: ["latin"], weight: ["700","900"] });
+const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["500","600"] });
 
-const navItems: Item[] = [
-  { href: "/", label: "Home" },
-  {
-    label: "Paket Umroh",
-    children: [
-      { href: "/paket-umroh", label: "Semua Paket" },
-      { href: "/paket-umroh/hemat", label: "Umroh Hemat" },
-      { href: "/paket-umroh/reguler", label: "Umroh Reguler" },
-      { href: "/paket-umroh/vip", label: "Umroh VIP" },
-      { href: "/paket-umroh/turki", label: "Umroh + Turki" },
-      { href: "/paket-umroh/dubai", label: "Umroh + Dubai" },
-    ],
-  },
-  { href: "/tabungan", label: "Program Tabungan" },
-  {
-    label: "Wisata Halal",
-    children: [
-      { href: "/wisata-halal/indonesia", label: "Indonesia" },
-      { href: "/wisata-halal/asia", label: "Asia" },
-      { href: "/wisata-halal/middle-east", label: "Middle East" },
-      { href: "/wisata-halal/europe", label: "Europe" },
-      { href: "/wisata-halal/custom", label: "Custom Trip" },
-    ],
-  },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/faq", label: "FAQ" },
-  {
-    label: "Why Us?",
-    children: [
-      { href: "/profile", label: "Tentang Kami" },
-      { href: "/kontak", label: "Hubungi Kami" },
-      { href: "#", label: "Resmi PPIU Kemenag" },
-      { href: "#", label: "Terdaftar ASTINDO & SAPUHI" },
-      { href: "#", label: "Transparansi biaya & layanan" },
-      { href: "#", label: "Pendampingan end-to-end" },
-    ],
-  },
-];
-
-const isNode = (it: Item): it is Node =>
-  Array.isArray((it as any).children) && (it as any).children.length > 0;
-
-function Pill({ active, children }: { active?: boolean; children: React.ReactNode }) {
-  return (
-    <div
-      className={[
-        "px-3 py-2 rounded-xl text-[13px] leading-none",
-        "border transition-colors select-none",
-        "flex items-center gap-2",
-        active
-          ? "bg-[var(--brand-accent)] text-[var(--brand-primary-900)] border-[var(--brand-accent)]"
-          : "text-white/95 border-white/30 hover:bg-white/10",
-      ].join(" ")}
-    >
-      {children}
-    </div>
-  );
-}
-
-function NavLink({ href, label }: Leaf) {
-  const pathname = usePathname();
-  const active = pathname === href || (href !== "/" && pathname?.startsWith(href));
-  return (
-    <Link href={href} className="inline-block whitespace-nowrap">
-      <Pill active={active}>{label}</Pill>
-    </Link>
-  );
-}
-
-function NavDropdown({ label, items = [] as Leaf[] }) {
-  const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-  const active = items.some((it) => pathname && pathname.startsWith(it.href));
-
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center whitespace-nowrap"
-        aria-expanded={open}
-      >
-        <Pill active={active}>
-          <span>{label}</span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className={`ml-1 transition-transform ${open ? "rotate-180" : ""}`}>
-            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </Pill>
-      </button>
-
-      {open && items.length > 0 && (
-        <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-xl border border-white/20 bg-[color:var(--brand-primary-700)]/95 backdrop-blur shadow-lg">
-          {items.map((it, idx) => (
-            <Link key={it.href + idx} href={it.href} className="block px-4 py-3 text-sm text-white/95 hover:bg-white/10" onClick={() => setOpen(false)}>
-              {it.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+type MenuItem = {
+  href: string;
+  label: string;
+  children?: { href: string; label: string }[];
+};
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const MAROON = "#681010";
+  const MAROON_SCROLL = "#7a1414";
+  const GOLD = "#D4AF37";
+  const navBg = scrolled ? MAROON_SCROLL : MAROON;
+
+  const menu: MenuItem[] = [
+    { href: "/", label: "Home" },
+    {
+      href: "/paket",
+      label: "Paket Umroh",
+      children: [
+        { href: "/paket", label: "Semua Paket" },
+        { href: "/paket/umroh-hemat", label: "Umroh Hemat" },
+        { href: "/paket/umroh-reguler", label: "Umroh Reguler" },
+        { href: "/paket/umroh-vip", label: "Umroh VIP" },
+        { href: "/paket/umroh-plus-turki", label: "Umroh + Turki" },
+        { href: "/paket/umroh-plus-dubai", label: "Umroh + Dubai" },
+      ],
+    },
+    { href: "/tabungan", label: "Program Tabungan" },
+    {
+      href: "/wisata",
+      label: "Wisata Halal",
+      children: [
+        { href: "/wisata/indonesia", label: "Indonesia" },
+        { href: "/wisata/asia", label: "Asia" },
+        { href: "/wisata/middle-east", label: "Middle East" },
+        { href: "/wisata/europe", label: "Europe" },
+        { href: "/wisata/custom-trip", label: "Custom Trip" },
+      ],
+    },
+    { href: "/gallery", label: "Gallery" },
+    { href: "/faq", label: "FAQ" },
+    { href: "/whyus", label: "Why Us?" },
+  ];
+
+  const isActive = (href: string) => pathname === href;
 
   return (
-    <header className="sticky top-0 z-50 shadow-sm">
-      <nav className="w-full" style={{ backgroundColor: "var(--brand-primary)" }}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between gap-4">
-            {/* Brand */}
-            <Link href="/" className="flex items-center gap-3 min-w-0">
-              <Image src="/logo-mumtaz.png" alt="Mumtaz" width={56} height={56} className="h-14 w-14 rounded-full object-contain" priority />
-              <div className="leading-tight">
-                <p className="text-lg font-bold text-[var(--brand-accent)]">MUMTAZ</p>
-                <p className="text-[13px] text-white">Madaniah Utama</p>
-              </div>
-            </Link>
-
-            {/* Menu desktop inline semua */}
-            <div className="hidden md:flex items-center gap-2 flex-nowrap overflow-x-auto no-scrollbar">
-              {navItems.map((it) =>
-                isNode(it) ? (
-                  <NavDropdown key={it.label} label={it.label} items={it.children} />
-                ) : (
-                  <NavLink key={(it as Leaf).href} {...(it as Leaf)} />
-                )
-              )}
-            </div>
-
-            {/* Burger mobile */}
-            <button
-              className="md:hidden inline-flex items-center justify-center rounded-xl p-2 text-white hover:opacity-90"
-              onClick={() => setOpen((v) => !v)}
-              aria-label="Toggle Menu"
-              aria-expanded={open}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {open ? <path d="M18 6 6 18M6 6l12 12" /> : (<><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>)}
-              </svg>
-            </button>
+    <nav
+      className={`text-white fixed w-full top-0 z-50 transition-colors duration-300 ${scrolled ? "shadow-lg" : "shadow-md"}`}
+      style={{ backgroundColor: navBg }}
+    >
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-2 flex items-center justify-between">
+        <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-3 md:gap-4 select-none">
+          <div className="relative h-20 w-20">
+            <Image
+              src="/logo-mumtaz.png"
+              alt="Logo Mumtaz"
+              width={80}
+              height={80}
+              className="object-contain rounded-full"
+              priority
+            />
           </div>
+          <div className="leading-tight">
+            <span
+              className={`${cinzel.className} uppercase tracking-wide font-extrabold text-[20px] md:text-[24px]`}
+              style={{ color: GOLD, textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}
+            >
+              MUMTAZ
+            </span>
+            <span
+              className={`${cormorant.className} italic block text-[12px] md:text-sm`}
+              style={{ color: "#E5E5E5", letterSpacing: "0.05em" }}
+            >
+              Madaniah Utama
+            </span>
+          </div>
+        </Link>
 
-          {/* Drawer mobile */}
-          {open && (
-            <div className="md:hidden pb-3">
-              <div className="flex flex-col gap-2">
-                {navItems.map((it, idx) =>
-                  isNode(it) ? (
-                    <details key={"dd-"+idx} className="rounded-xl border border-white/20">
-                      <summary className="px-4 py-3 cursor-pointer text-white flex justify-between items-center">
-                        {it.label}
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="ml-2 shrink-0">
-                          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </summary>
-                      <div className="flex flex-col">
-                        {it.children.map((c, cIdx) => (
-                          <Link key={c.href + cIdx} href={c.href} className="px-4 py-3 text-white/95 hover:bg-white/10" onClick={() => setOpen(false)}>
-                            {c.label}
+        {/* Desktop menu */}
+        <ul className="hidden md:flex items-center gap-2 font-medium">
+          {menu.map((item) => {
+            const active = isActive(item.href);
+            const hasChildren = !!item.children?.length;
+            return (
+              <li key={item.href} className="relative group">
+                <Link
+                  href={item.href}
+                  className="px-3 py-1.5 rounded-full border inline-flex items-center gap-1 transition"
+                  style={{
+                    borderColor: active ? GOLD : "rgba(255,255,255,0.2)",
+                    backgroundColor: active ? GOLD : "transparent",
+                    color: active ? MAROON : "white",
+                    fontWeight: active ? 600 : 500,
+                  }}
+                >
+                  {item.label}
+                  {hasChildren && <ChevronDown size={16} className="opacity-90" />}
+                </Link>
+                {hasChildren && (
+                  <div
+                    className="invisible opacity-0 group-hover:visible group-hover:opacity-100
+                               before:absolute before:-top-2 before:left-0 before:w-full before:h-2
+                               absolute left-0 mt-0.5 min-w-[240px] rounded-xl border bg-white shadow-xl
+                               transition-opacity"
+                    style={{ borderColor: "rgba(0,0,0,0.06)" }}
+                  >
+                    <ul className="py-2">
+                      {item.children!.map((child) => (
+                        <li key={child.href}>
+                          <Link
+                            href={child.href}
+                            className="block px-4 py-2.5 text-[15px] hover:bg-gray-100 transition"
+                            style={{ color: MAROON }}
+                          >
+                            {child.label}
                           </Link>
-                        ))}
-                      </div>
-                    </details>
-                  ) : (
-                    <Link key={(it as Leaf).href} href={(it as Leaf).href} className="px-4 py-3 rounded-xl text-[14px] text-white border border-white/20 hover:bg-white/10" onClick={() => setOpen(false)}>
-                      {(it as Leaf).label}
-                    </Link>
-                  )
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
-              </div>
-            </div>
-          )}
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Mobile toggle */}
+        <button onClick={() => { setIsOpen(!isOpen); setOpenDropdown(null); }} className="md:hidden focus:outline-none">
+          {isOpen ? <X size={26} /> : <Menu size={26} />}
+        </button>
+      </div>
+
+      {isOpen && (
+        <div className="md:hidden px-3 pb-3 relative z-[60]" style={{ backgroundColor: navBg }}>
+          <ul className="grid gap-3 font-medium">
+            {menu.map((item) => {
+              const hasChildren = !!item.children?.length;
+              const opened = openDropdown === item.href;
+              const headerCls =
+                "w-full flex items-center justify-between rounded-2xl px-4 py-3 border cursor-pointer select-none active:scale-[.99] active:bg-white/10";
+              const headerStyle = { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.05)" };
+
+              return (
+                <li key={item.href}>
+                  {hasChildren ? (
+                    <button
+                      type="button"
+                      className={headerCls}
+                      style={headerStyle}
+                      onClick={() => setOpenDropdown(opened ? null : item.href)}
+                    >
+                      <span className="text-left">{item.label}</span>
+                      <ChevronDown size={18} className={`transition ${opened ? "rotate-180" : ""}`} />
+                    </button>
+                  ) : (
+                    <Link href={item.href} onClick={() => setIsOpen(false)} className={headerCls} style={headerStyle}>
+                      <span className="text-left">{item.label}</span>
+                    </Link>
+                  )}
+                  {hasChildren && opened && (
+                    <div
+                      className="mt-2 rounded-2xl border relative z-[61] max-h-80 overflow-y-auto pointer-events-auto"
+                      style={{ borderColor: "rgba(255,255,255,0.14)", backgroundColor: "rgba(255,255,255,0.03)" }}
+                    >
+                      <ul className="py-2">
+                        {item.children!.map((child, idx) => (
+                          <li key={child.href} className={`px-4 ${idx === 0 ? "" : "border-t"}`}
+                              style={{ borderColor: "rgba(255,255,255,0.10)" }}>
+                            <Link
+                              href={child.href}
+                              onClick={() => setIsOpen(false)}
+                              className="block w-full py-3.5 text-[16px] active:bg-white/10 rounded-lg"
+                            >
+                              {child.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
-      </nav>
-    </header>
+      )}
+    </nav>
   );
 }
