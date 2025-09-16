@@ -1,138 +1,110 @@
 "use client";
+
+import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-type Slide = {
-  id: string;
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
-  bullets?: string[];
-  ctas?: { label: string; href: string }[];
-  image?: string;
-};
-
-const slides: Slide[] = [
+const slides = [
   {
-    id: "integritas",
-    eyebrow: "Mumtaz Madaniah Utama — Resmi & Terpercaya",
-    title: "Amanah Selalu di Hati",
-    subtitle: "Berizin resmi PPIU Kemenag, terintegrasi dengan mitra terpercaya.",
-    bullets: [
-      "Izin PPIU: 02201013519080004",
-      "Terdaftar ASTINDO & SAPUHI",
-      "Pendampingan end-to-end",
-      "Transparansi biaya & layanan",
-    ],
-    ctas: [{ label: "Lihat Paket", href: "#paket" }],
-    image: "/hero-1.jpg",
+    src: "/hero-1.jpg",
+    title: "Umroh Hemat & Nyaman",
+    desc: "Pilihan terbaik untuk ibadah dengan harga terjangkau dan layanan berkualitas.",
   },
   {
-    id: "tabungan",
-    eyebrow: "Program Tabungan Umroh",
-    title: "Cicil Ringan, Berangkat Nyaman",
-    subtitle: "Terintegrasi bank rekanan, setoran fleksibel.",
-    bullets: ["Setoran terjangkau", "Monitoring transparan", "Tenor variatif"],
-    ctas: [{ label: "Mulai Nabung", href: "#tabungan" }],
-    image: "/hero-2.jpg",
+    src: "/hero-2.jpg",
+    title: "Umroh VIP & Premium",
+    desc: "Nikmati pengalaman eksklusif dengan fasilitas terbaik untuk perjalanan ibadah Anda.",
   },
   {
-    id: "corporate",
-    eyebrow: "Umroh Korporasi",
-    title: "Rombongan Perusahaan / Instansi",
-    subtitle: "Kustom itinerary, MoU, & laporan pertanggungjawaban.",
-    bullets: ["Harga grup kompetitif", "Pendampingan VIP", "Branding perusahaan"],
-    ctas: [{ label: "Ajukan Proposal", href: "#corporate" }],
-    image: "/hero-3.jpg",
+    src: "/hero-3.jpg",
+    title: "Umroh + Wisata",
+    desc: "Gabungkan ibadah dan wisata halal di destinasi populer dunia.",
   },
   {
-    id: "wisata",
-    eyebrow: "Wisata Halal",
-    title: "Jelajah Dunia, Tetap Syariah",
-    subtitle: "Turkey • Dubai • Eropa • Asia dengan kurasi halal.",
-    bullets: ["Hotel & kuliner halal", "Guide berpengalaman", "Umroh + Wisata"],
-    ctas: [{ label: "Lihat Paket Wisata", href: "#wisata" }],
-    image: "/hero-4.jpg",
+    src: "/hero-4.jpg",
+    title: "Wisata Halal Global",
+    desc: "Temukan destinasi halal di Asia, Eropa, dan Timur Tengah bersama Mumtaz.",
   },
 ];
 
 export default function Hero() {
-  const [i, setI] = useState(0);
-  const go = (n: number) => setI((p) => (p + n + slides.length) % slides.length);
+  const [current, setCurrent] = useState(0);
 
+  // Auto slide
   useEffect(() => {
-    const t = setInterval(() => go(1), 7000);
-    return () => clearInterval(t);
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  const s = slides[i];
+  const prevSlide = () => setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+  const nextSlide = () => setCurrent((prev) => (prev + 1) % slides.length);
 
   return (
-    <section id="home" className="relative">
-      {s.image && (
+    <section className="relative w-full h-[90vh] flex items-center justify-center overflow-hidden">
+      {/* Slides */}
+      {slides.map((slide, idx) => (
         <div
-          className="absolute inset-0 -z-10 bg-black"
-          style={{ backgroundImage:`url(${s.image})`, backgroundSize:"cover", backgroundPosition:"center", opacity:0.18 }}
-        />
-      )}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white/70 via-white/85 to-white" />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-10">
-        <div className="grid md:grid-cols-2 gap-6 items-center min-h-[56vh] md:min-h-[62vh]">
-          <div>
-            {s.eyebrow && (
-              <p className="text-xs uppercase tracking-wider text-[#6A1D1B] font-semibold">{s.eyebrow}</p>
-            )}
-            <h1 className="mt-2 text-4xl md:text-5xl font-extrabold text-[#1c1c1c]">{s.title}</h1>
-            {s.subtitle && <p className="mt-3 text-lg text-gray-700">{s.subtitle}</p>}
-            {s.bullets && (
-              <ul className="mt-4 grid gap-2 sm:grid-cols-2 text-gray-800">
-                {s.bullets.map((b, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="mt-1 h-2 w-2 rounded-full bg-[#D4AF37]" />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="mt-6 flex flex-wrap gap-3">
-              {s.ctas?.map((c) => (
-                <a
-                  key={c.label}
-                  href={c.href}
-                  className="inline-flex items-center justify-center rounded-xl border border-[#6A1D1B]/20 px-5 py-2.5 font-semibold text-[#6A1D1B] hover:bg-[#6A1D1B]/5"
-                >
-                  {c.label}
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <div className="hidden md:block">
-            <div className="aspect-[4/3] w-full rounded-2xl bg-white/60 border border-black/5 shadow-sm overflow-hidden flex items-center justify-center">
-              <span className="text-sm text-gray-500">Gambar slide {i + 1} (placeholder)</span>
-            </div>
-          </div>
+          key={idx}
+          className={`absolute inset-0 transition-opacity duration-1000 ${idx === current ? "opacity-100" : "opacity-0"}`}
+        >
+          <Image src={slide.src} alt={`Slide ${idx + 1}`} fill priority className="object-cover" />
+          <div className="absolute inset-0 bg-black/50" />
         </div>
+      ))}
 
-        <div className="mt-6 flex items-center gap-3">
-          <button onClick={() => go(-1)} aria-label="Prev" className="rounded-full p-2 border hover:bg-gray-50">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <div className="flex items-center gap-2">
-            {slides.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setI(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className={`h-2.5 w-2.5 rounded-full ${i === idx ? "bg-[#1c1c1c]" : "bg-gray-300"}`}
-              />
-            ))}
-          </div>
-          <button onClick={() => go(1)} aria-label="Next" className="rounded-full p-2 border hover:bg-gray-50">
-            <ChevronRight className="h-5 w-5" />
-          </button>
+      {/* Content */}
+      <div className="relative z-10 text-center text-white max-w-3xl px-4">
+        <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-4 drop-shadow-lg">
+          {slides[current].title} <span className="text-yellow-400">Mumtaz</span>
+        </h1>
+        <p className="text-lg md:text-xl mb-6 text-gray-100 drop-shadow">
+          {slides[current].desc}
+        </p>
+
+        {/* CTA */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="https://wa.me/62895600000101"
+            target="_blank"
+            className="px-6 py-3 rounded-xl bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition shadow-lg"
+          >
+            Konsultasi via WhatsApp
+          </Link>
+          <Link
+            href="/paket"
+            className="px-6 py-3 rounded-xl border border-white font-semibold hover:bg-white/10 transition"
+          >
+            Lihat Paket
+          </Link>
         </div>
+      </div>
+
+      {/* Navigation buttons */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full"
+      >
+        <ChevronLeft size={28} />
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full"
+      >
+        <ChevronRight size={28} />
+      </button>
+
+      {/* Dots indicator */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+        {slides.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrent(idx)}
+            className={`w-3 h-3 rounded-full ${current === idx ? "bg-yellow-400" : "bg-white/50"}`}
+          />
+        ))}
       </div>
     </section>
   );
