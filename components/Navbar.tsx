@@ -1,5 +1,5 @@
 "use client";
-
+import Brand from "./Brand";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -72,28 +72,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-2 flex items-center justify-between">
         <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-3 md:gap-4 select-none">
           <div className="relative h-20 w-20">
-            <Image
-              src="/logo-mumtaz.png"
-              alt="Logo Mumtaz"
-              width={80}
-              height={80}
-              className="object-contain rounded-full"
-              priority
-            />
-          </div>
-          <div className="leading-tight">
-            <span
-              className={`${cinzel.className} uppercase tracking-wide font-extrabold text-[20px] md:text-[24px]`}
-              style={{ color: GOLD, textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}
-            >
-              MUMTAZ
-            </span>
-            <span
-              className={`${cormorant.className} italic block text-[12px] md:text-sm`}
-              style={{ color: "#E5E5E5", letterSpacing: "0.05em" }}
-            >
-              Madaniah Utama
-            </span>
+            <Brand />
           </div>
         </Link>
 
@@ -208,3 +187,4 @@ export default function Navbar() {
     </nav>
   );
 }
+
